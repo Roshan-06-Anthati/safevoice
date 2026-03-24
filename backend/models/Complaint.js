@@ -10,6 +10,11 @@ const complaintSchema = new mongoose.Schema(
     image: String,
     audio: String,
     video: String,
+    accusedName: String,
+    accusedId: String,
+    estimatedTime: Number,
+    action: String,
+    severeActionTaken: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
   },
   { timestamps: true } 

@@ -1,16 +1,19 @@
 import express from "express";
-import { upload } from "../config/upload.js"; // ✅ NEW
+import { upload } from "../config/upload.js";
 
 import {
   createComplaint,
   getComplaints,
   trackComplaint,
   updateComplaintStatus,
+  getEmergencyAlerts,
+  getBlacklisted,
+  takeSevereAction, // 🔥 FIX: added this
 } from "../controllers/complaintController.js";
 
 const router = express.Router();
 
-// 🔥 CREATE complaint with file upload
+// 🔥 CREATE complaint (with files)
 router.post(
   "/",
   upload.fields([
@@ -21,13 +24,22 @@ router.post(
   createComplaint
 );
 
-// 🔥 GET all complaints (admin dashboard)
+// 🔥 TAKE SEVERE ACTION
+router.put("/action/:accusedId", takeSevereAction);
+
+// 🔥 GET all complaints
 router.get("/", getComplaints);
 
-// 🔥 UPDATE status (admin action)
+// 🔥 UPDATE status
 router.put("/:id", updateComplaintStatus);
 
-// 🔥 TRACK complaint (user)
+// 🔥 TRACK complaint
 router.get("/track/:id", trackComplaint);
+
+// 🚨 EMERGENCY ALERTS
+router.get("/alerts", getEmergencyAlerts);
+
+// 🚫 BLACKLIST
+router.get("/blacklisted", getBlacklisted);
 
 export default router;

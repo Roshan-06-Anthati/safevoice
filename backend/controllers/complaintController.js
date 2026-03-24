@@ -4,21 +4,42 @@ import { analyzeComplaint } from "../services/aiService.js";
 const generateId = () =>
   Math.random().toString(36).substring(2, 10);
 
-// 🔹 Create Complaint
+// 🔥 CREATE COMPLAINT (UPDATED WITH ACCUSED + ALERT LOGIC)
 export const createComplaint = async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, accusedName, accusedId } = req.body;
 
     const ai = await analyzeComplaint(text);
 
-    let status = "Logged";
+    // 🔥 count complaints for same accused
+    let count = 0;
+    if (accusedId) {
+      count = await Complaint.countDocuments({ accusedId });
+    }
+
+    // 🔥 severity override (repeat offender)
+    let severity = ai.severity;
+
+    if (count >= 1) {
+      severity = "critical";
+    }
 
     const complaint = await Complaint.create({
       text,
       type: ai.type,
-      severity: ai.severity,
-      status,
+      severity,
+      status: "Logged",
       trackingId: generateId(),
+
+      // 🔥 AI NEW FIELDS
+      estimatedTime: ai.estimated_time || 3,
+      action: ai.action || "review",
+
+      // 🔥 accused tracking
+      accusedName,
+      accusedId,
+
+      // 🔥 evidence
       image: req.files?.image?.[0]?.path || null,
       audio: req.files?.audio?.[0]?.path || null,
       video: req.files?.video?.[0]?.path || null,
@@ -30,7 +51,7 @@ export const createComplaint = async (req, res) => {
   }
 };
 
-// 🔥 UPDATED: PRIORITY SORTING (IMPORTANT)
+// 🔥 PRIORITY SORTING
 export const getComplaints = async (req, res) => {
   const severityOrder = {
     critical: 3,
@@ -50,7 +71,7 @@ export const getComplaints = async (req, res) => {
   res.json(data);
 };
 
-// 🔥 NEW: TRACKING API
+// 🔥 TRACKING API
 export const trackComplaint = async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,7 +88,7 @@ export const trackComplaint = async (req, res) => {
   }
 };
 
-// 🔥 UPDATE STATUS (ADMIN ACTION)
+// 🔥 UPDATE STATUS (ADMIN)
 export const updateComplaintStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -77,7 +98,7 @@ export const updateComplaintStatus = async (req, res) => {
       id,
       {
         status,
-        verified: status.includes("Resolved"), // ✅ auto verify
+        verified: status.includes("Resolved"),
       },
       { new: true }
     );
@@ -87,3 +108,68 @@ export const updateComplaintStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// 🚨 EMERGENCY ALERT SYSTEM
+export const getEmergencyAlerts = async (req, res) => {
+  try {
+    const alerts = await Complaint.aggregate([
+      {
+        $match: {
+          accusedId: { $ne: null },
+          severeActionTaken: false, // 🔥 exclude handled
+        },
+      },
+      {
+        $group: {
+          _id: "$accusedId",
+          accusedName: { $first: "$accusedName" },
+          complaints: { $push: "$$ROOT" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $match: { count: { $gte: 2 } },
+      },
+    ]);
+
+    res.json(alerts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const takeSevereAction = async (req, res) => {
+  try {
+    const { accusedId } = req.params;
+
+    await Complaint.updateMany(
+      { accusedId },
+      { severeActionTaken: true }
+    );
+
+    res.json({ message: "Action taken" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getBlacklisted = async (req, res) => {
+  try {
+    const data = await Complaint.aggregate([
+      {
+        $match: { severeActionTaken: true },
+      },
+      {
+        $group: {
+          _id: "$accusedId",
+          accusedName: { $first: "$accusedName" },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

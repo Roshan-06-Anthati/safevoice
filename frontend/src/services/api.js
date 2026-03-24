@@ -9,6 +9,8 @@ export const submitComplaint = (data) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+export const getAlerts = () => API.get("/complaints/alerts");
+
 export const getComplaints = () =>
   API.get("/complaints");
 
@@ -17,3 +19,9 @@ export const trackComplaint = (id) =>
 
 export const updateComplaint = (id, data) =>
   API.put(`/complaints/${id}`, data);
+
+export const takeAction = (id) =>
+  API.put(`/complaints/action/${id}`);
+
+export const getBlacklisted = () =>
+  API.get("/complaints/blacklisted");

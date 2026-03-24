@@ -14,7 +14,7 @@ export const analyzeComplaint = async (text) => {
       model: "meta/llama-3.1-8b-instruct",
       temperature: 0,
       top_p: 0.7,
-      max_tokens: 150,
+      max_tokens: 200,
 
       messages: [
         {
@@ -23,34 +23,45 @@ export const analyzeComplaint = async (text) => {
 You are a strict harassment classification AI.
 
 TASK:
-Classify the complaint into:
-- type: verbal | physical | cyber | sexual
-- severity: low | medium | critical
+Analyze the complaint and return:
+
+1. type: verbal | physical | cyber | sexual
+2. severity: low | medium | critical
+3. estimated_time (number of days)
+4. action: warning | review | escalate
 
 STRICT RULES:
 
 CRITICAL:
 - threats (kill, harm, attack)
 - physical violence
-- sexual harassment or inappropriate touching
+- sexual harassment
+→ estimated_time: 1–2
+→ action: escalate
 
 MEDIUM:
-- repeated abuse
-- bullying, insults, harassment
-- stalking or intimidation
+- bullying, abuse, harassment
+→ estimated_time: 3–4
+→ action: review
 
 LOW:
 - mild discomfort
-- unclear or non-serious issues
+→ estimated_time: 5–7
+→ action: warning
 
 IMPORTANT:
-- Always follow rules strictly
-- Do NOT explain anything
-- Do NOT add extra text
-- Output ONLY valid JSON
+- ALWAYS return ALL fields
+- DO NOT skip any field
+- DO NOT explain anything
+- OUTPUT ONLY JSON
 
 FORMAT:
-{ "type": "...", "severity": "..." }
+{
+  "type": "...",
+  "severity": "...",
+  "estimated_time": number,
+  "action": "..."
+}
           `,
         },
         {
@@ -64,14 +75,15 @@ FORMAT:
 
     console.log("RAW AI:", raw);
 
-    // Safe JSON extraction
     const jsonMatch = raw.match(/{[\s\S]*}/);
 
     if (!jsonMatch) {
       throw new Error("Invalid AI response (no JSON)");
     }
 
-    return JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    return parsed;
 
   } catch (err) {
     console.log("AI ERROR:", err.message);

@@ -15,84 +15,87 @@ function Track() {
     }
   };
 
-  // Severity color
   const getColor = (sev) => {
     if (sev === "critical") return "red";
     if (sev === "medium") return "orange";
     return "green";
   };
 
-  // Status message
-  const getMessage = (status) => {
-    if (status.includes("Escalated"))
-      return "🚨 Your complaint is being handled urgently";
-    if (status.includes("Review"))
-      return "⚠️ Your complaint is under review";
-    if (status.includes("Resolved"))
-      return "✅ Your issue has been resolved";
-    return "📩 Complaint received successfully";
-  };
-
-  // Progress steps
-  const getProgress = (status) => {
-    return (
-      <>
-        ✔ Logged →{" "}
-        {status !== "Logged" && "✔ Under Review → "}
-        {(status.includes("Escalated") ||
-          status.includes("Resolved")) && "✔ Escalated → "}
-        {status.includes("Resolved") && "✔ Resolved"}
-      </>
-    );
+  const getActionColor = (action) => {
+    if (action === "escalate") return "red";
+    if (action === "review") return "orange";
+    return "green";
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Track Complaint</h2>
+    <div className="container">
+      <div className="card">
+        <h2>Track Complaint</h2>
 
-      <input
-        placeholder="Enter Tracking ID"
-        value={id}
-        onChange={(e) => setId(e.target.value)}
-      />
+        <input
+          placeholder="Enter Tracking ID"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
 
-      <button onClick={handleTrack}>Track</button>
+        <button onClick={handleTrack}>Track</button>
 
-      {data && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Complaint Found ✅</h3>
+        {data && (
+          <div style={{ marginTop: "15px" }}>
+            <h3>Complaint Found ✅</h3>
 
-          <p style={{ color: getColor(data.severity) }}>
-            <b>Severity:</b> {data.severity}
-          </p>
+            <p style={{ color: getColor(data.severity) }}>
+              <b>Severity:</b> {data.severity}
+            </p>
 
-          <p>
-            <b>Status:</b> {data.status}
-          </p>
+            <p><b>Status:</b> {data.status}</p>
 
-          {/* 🔥 Dynamic message */}
-          <p>{getMessage(data.status)}</p>
+            <p style={{ color: getActionColor(data.action) }}>
+              💡 <b>Action:</b> {data.action || "N/A"}
+            </p>
 
-          <p>
-            <b>Submitted:</b>{" "}
-            {new Date(data.createdAt).toLocaleString()}
-          </p>
+            <p>
+              ⏱ <b>Estimated:</b> {data.estimatedTime || "N/A"} days
+            </p>
 
-          <p>🔐 Your identity is completely anonymous</p>
+            <p>
+              <b>Submitted:</b>{" "}
+              {new Date(data.createdAt).toLocaleString()}
+            </p>
 
-          {/* 🔥 NEW: Evidence */}
-          {(data.image || data.audio || data.video) && <p> Evidence Submitted</p>}
+            <p>🔐 Anonymous</p>
 
-          {/* 🔥 NEW: Verified */}
-          {data.verified && <p>✔ Verified by Admin</p>}
+            {/* Evidence */}
+            {(data.image || data.audio || data.video) && (
+              <div>
+                <p>📎 Evidence</p>
 
-          {/* 🔥 Progress */}
-          <div style={{ marginTop: "10px" }}>
-            <b>Progress:</b>
-            <p>{getProgress(data.status)}</p>
+                {data.image && (
+                  <img
+                    src={`http://localhost:5000/${data.image}`}
+                    width="200"
+                    alt="proof"
+                  />
+                )}
+
+                {data.audio && (
+                  <audio controls>
+                    <source src={`http://localhost:5000/${data.audio}`} />
+                  </audio>
+                )}
+
+                {data.video && (
+                  <video width="250" controls>
+                    <source src={`http://localhost:5000/${data.video}`} />
+                  </video>
+                )}
+              </div>
+            )}
+
+            {data.verified && <p>✔ Verified by Admin</p>}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

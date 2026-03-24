@@ -5,18 +5,21 @@ function ComplaintForm() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 NEW STATES
   const [image, setImage] = useState(null);
   const [audio, setAudio] = useState(null);
   const [video, setVideo] = useState(null);
+
+  const [accusedName, setAccusedName] = useState("");
+  const [accusedId, setAccusedId] = useState("");
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
 
-      // 🔥 Use FormData (IMPORTANT)
       const formData = new FormData();
       formData.append("text", text);
+      formData.append("accusedName", accusedName);
+      formData.append("accusedId", accusedId);
 
       if (image) formData.append("image", image);
       if (audio) formData.append("audio", audio);
@@ -26,12 +29,15 @@ function ComplaintForm() {
 
       alert("Tracking ID: " + res.data.trackingId);
 
-      // Reset
+      // 🔥 Reset everything
       setText("");
+      setAccusedName("");
+      setAccusedId("");
       setImage(null);
       setAudio(null);
+      setVideo(null);
 
-    } catch (err) {
+    } catch {
       alert("Error submitting complaint");
     } finally {
       setLoading(false);
@@ -39,54 +45,41 @@ function ComplaintForm() {
   };
 
   return (
-    <div>
-      <h3>Submit Complaint</h3>
+    <div className="container">
+      <div className="card">
+        <h3>Submit Complaint</h3>
 
-      {/* 🔹 Text */}
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Describe your issue..."
-      />
+        <input
+          placeholder="Accused Name"
+          value={accusedName}
+          onChange={(e) => setAccusedName(e.target.value)}
+        />
 
-      <br /><br />
+        <input
+          placeholder="Accused ID"
+          value={accusedId}
+          onChange={(e) => setAccusedId(e.target.value)}
+        />
 
-      {/* 🔥 Image Upload */}
-      <label>Upload Image Proof:</label>
-      <br />
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setImage(e.target.files[0])}
-      />
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Describe your issue..."
+        />
 
-      <br /><br />
+        <label>Image Proof:</label>
+        <input type="file" onChange={(e) => setImage(e.target.files[0])} />
 
-      {/* 🔥 Audio Upload */}
-      <label>Upload Audio Proof:</label>
-      <br />
-      <input
-        type="file"
-        accept="audio/*"
-        onChange={(e) => setAudio(e.target.files[0])}
-      />
+        <label>Audio Proof:</label>
+        <input type="file" onChange={(e) => setAudio(e.target.files[0])} />
 
-      <br /><br />
+        <label>Video Proof:</label>
+        <input type="file" onChange={(e) => setVideo(e.target.files[0])} />
 
-      {/* 🔥 Video Upload */}
-      <label>Upload Video Proof:</label>
-      <br />
-      <input
-        type="file"
-        accept="video/*"
-        onChange={(e) => setVideo(e.target.files[0])}
-      />
-
-      <br /><br />
-
-      <button onClick={handleSubmit}>
-        {loading ? "Analyzing..." : "Submit"}
-      </button>
+        <button onClick={handleSubmit}>
+          {loading ? "Analyzing..." : "Submit"}
+        </button>
+      </div>
     </div>
   );
 }

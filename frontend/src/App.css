@@ -1,0 +1,81 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f6fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container */
+.container {
+  padding: 20px;
+}
+
+/* Card */
+.card {
+  background: white;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Buttons */
+button {
+  padding: 6px 12px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-review {
+  background: orange;
+  color: white;
+}
+
+.btn-escalate {
+  background: red;
+  color: white;
+}
+
+.btn-resolve {
+  background: green;
+  color: white;
+}
+
+/* Alerts */
+.alert-box {
+  border: 2px solid red;
+  background: #ffe5e5;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Blacklist */
+.blacklist-box {
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+/* Input */
+input, textarea {
+  padding: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Filter buttons */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
